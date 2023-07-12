@@ -177,7 +177,7 @@ uint8_t ry_key_state_machine(ry_key_t *key)
 		{
 			__key_event_mark(key, KEY_UP_EVENT);
 			key->status         = KEY_UP_STATUS;
-			if(key->scan.tick < key->scan.long_limit)
+			if(key->scan.tick < key->scan.double_click_limit)
 				key->scan.click_cnt++;
 		}
 		else if(key->scan.tick == key->scan.long_limit)
@@ -275,9 +275,12 @@ void ry_key_scan(void)
 			}
 		}
 	}
-	/* 处理独立按键的事件，低优先级 */
-	else if(1 == __keyObj.event_cnt)
+	/* 处理独立按键的事件，低优先级。必须要有一个事件，且已按下的按键数 <= 1 */
+	else if(1 == __keyObj.event_cnt && __keyObj.down_key_cnt <= 1)
 	{
+		/* 在上述条件下，如果当前按键没有按下，则已按下的按键数必须为0 */
+		if(KEY_DOWN_STATUS != __keyObj.current_active_key->status && 1 == __keyObj.down_key_cnt)
+			goto __KEY_EVENT_CLEAR;
 		ry_key_callback(__keyObj.current_active_key, __keyObj.current_active_key->event);
 	}
 
