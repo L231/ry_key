@@ -15,15 +15,18 @@
 
 
 
+/* 按键持续按下，则保持超长按状态 */
+#define KEY_LONG_LONG_PRESS_STATUS_KEEP           1
+
+
 
 #define KEY_COMPOUND_NUM               5
 
 typedef enum
 {
-	KEY_DOWN_STATUS,        /* 按下状态 */
-	KEY_UP_STATUS,          /* 弹起状态 */
-	KEY_LONG_PRESS_STATUS,  /* 长按状态 */
-	KEY_IDLE_STATUS,        /* 空闲状态 */
+	KEY_DOWN_STATUS,             /* 按下状态 */
+	KEY_UP_STATUS,               /* 弹起状态 */
+	KEY_IDLE_STATUS,             /* 空闲状态 */
 }E_key_status_t;
 
 typedef enum
@@ -69,7 +72,8 @@ typedef struct
 /* 组合键的控制块 */
 typedef struct
 {
-	uint8_t                 status      : 4;
+	uint8_t                 type        : 1;
+	uint8_t                 status      : 3;
 	uint8_t                 event       : 4;
 	ry_slist_t              slist;
 	callback                callback[1];
@@ -80,7 +84,8 @@ typedef struct
 /* 独立按键的控制块 */
 struct ry_key
 {
-	uint8_t                 status      : 4;
+	uint8_t                 type        : 1;
+	uint8_t                 status      : 3;
 	uint8_t                 event       : 4;
 	ry_slist_t              slist;
 	callback                callback[KEY_NONE_EVENT];          /* 事件的回调函数 */
@@ -93,14 +98,16 @@ typedef struct
 {
 	uint8_t                 sn;                                /* 独立按键链表的下标，作为按键的SN号 */
 	uint8_t                 event_cnt;                         /* 记录有多少事件触发 */
+	uint8_t                 event_down_cnt;                    /* 记录有多少按压类事件触发 */
 	uint8_t                 down_key_cnt;                      /* 记录有多少个按键按下 */
 	uint8_t                 down_key_sn_buf[KEY_COMPOUND_NUM]; /* 缓存已按下的按键的SN号 */
+	ry_key_t               *current_active_key;                /* 当前激活的按键 */
 }ry_key_obj_t;
 
 
 
 /* 注册按键的回调函数 */
-#define RY_KEY_CALLBACK_CFG(key, event, cbk)       key.callback[event] = cbk
+#define RY_KEY_SET_EVENT_HANDLER(key, event, cbk)       key.callback[event] = cbk
 
 extern void ry_key_reg(ry_key_t *key,
 		uint8_t valid_level,         /* 有效电平，按键激活判断 */
