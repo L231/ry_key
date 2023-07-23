@@ -18,6 +18,22 @@
 /* 按键持续按下，则保持超长按状态 */
 #define KEY_LONG_LONG_PRESS_STATUS_KEEP           1
 
+/* 独立按键扫描的阈值是否采用默认值 */
+#define KEY_LIMIT_DEFAULT_ENABLE                  1
+
+
+
+#if KEY_LIMIT_DEFAULT_ENABLE == 1
+#define __KEY_LEVEL_FILTER_LIMIT                  5
+#define __KEY_DOUBLE_CLICK_LIMIT                  50
+#define __KEY_LONG_LIMIT                          300
+#define __KEY_LONG_LONG_LIMIT                     800
+#else
+#define __KEY_LEVEL_FILTER_LIMIT                  key->scan.filter_limit
+#define __KEY_DOUBLE_CLICK_LIMIT                  key->scan.double_click_limit
+#define __KEY_LONG_LIMIT                          key->scan.long_limit
+#define __KEY_LONG_LONG_LIMIT                     key->scan.long_long_limit
+#endif
 
 
 #define KEY_COMPOUND_NUM               5
@@ -61,11 +77,15 @@ typedef struct
 	uint8_t                 reserve     : 2;                   /* 保留 */
 	uint8_t                 click_cnt   : 4;                   /* 连击次数 */
 	uint8_t                 filter_cnt;                        /* 电平滤波计数 */
+#if KEY_LIMIT_DEFAULT_ENABLE == 0
 	uint8_t                 filter_limit;                      /* 电平滤波阈值 */
+#endif
 	uint16_t                tick;                              /* 按键扫描计时 */
+#if KEY_LIMIT_DEFAULT_ENABLE == 0
 	uint16_t                double_click_limit;                /* 双击时间的阈值 */
 	uint16_t                long_limit;                        /* 长按的阈值 */
 	uint16_t                long_long_limit;                   /* 超长按的阈值 */
+#endif
 	uint8_t               (*get_level)(void);                  /* 电平获取，函数指针 */
 }key_scan_t;
 
@@ -111,10 +131,12 @@ typedef struct
 
 extern void ry_key_reg(ry_key_t *key,
 		uint8_t valid_level,         /* 有效电平，按键激活判断 */
+#if KEY_LIMIT_DEFAULT_ENABLE == 0
 		uint8_t filter,              /* 电平滤波阈值 */
 		uint8_t double_click_limit,  /* 双击时间的阈值 */
 		uint8_t long_limit,          /* 长按的阈值 */
 		uint8_t long_long_limit,     /* 超长按的阈值 */
+#endif
 		uint8_t (*get_level)(void));
 extern void ry_key_compound_reg(ry_key_compound_t *key, callback cbk);
 

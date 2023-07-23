@@ -27,10 +27,12 @@ static ry_slist_t __keyCompoundSlist = {.next = RY_NULL};
 
 void ry_key_reg(ry_key_t *key,
 		uint8_t valid_level,         /* 有效电平，按键激活判断 */
+#if KEY_LIMIT_DEFAULT_ENABLE == 0
 		uint8_t filter,              /* 电平滤波阈值 */
 		uint8_t double_click_limit,  /* 双击时间的阈值 */
 		uint8_t long_limit,          /* 长按的阈值 */
 		uint8_t long_long_limit,     /* 超长按的阈值 */
+#endif
 		uint8_t (*get_level)(void))
 {
 	uint8_t pos;
@@ -42,11 +44,13 @@ void ry_key_reg(ry_key_t *key,
 	key->scan.level              = !valid_level;
 	key->scan.valid_level        = valid_level;
 	key->scan.filter_cnt         = 0;
-	key->scan.filter_limit       = filter;
 	key->scan.tick               = 0;
+#if KEY_LIMIT_DEFAULT_ENABLE == 0
+	key->scan.filter_limit       = filter;
 	key->scan.double_click_limit = double_click_limit;
 	key->scan.long_limit         = long_limit;
 	key->scan.long_long_limit    = long_long_limit;
+#endif
 	key->scan.get_level          = get_level;
 	for(pos = 0; pos < KEY_NONE_EVENT; pos++)
 		key->callback[pos] = RY_NULL;
@@ -144,7 +148,7 @@ void __key_level_scan(ry_key_t *key)
 	uint8_t level = key->scan.get_level();
 	if(level != key->scan.level)
 	{
-		if(key->scan.filter_cnt++ >= key->scan.filter_limit)
+		if(key->scan.filter_cnt++ >= __KEY_LEVEL_FILTER_LIMIT)
 		{
 			key->scan.level      = level;
 			key->scan.filter_cnt = 0;
@@ -177,15 +181,15 @@ uint8_t ry_key_state_machine(ry_key_t *key)
 		{
 			__key_event_mark(key, KEY_UP_EVENT);
 			key->status         = KEY_UP_STATUS;
-			if(key->scan.tick < key->scan.double_click_limit)
+			if(key->scan.tick < __KEY_DOUBLE_CLICK_LIMIT)
 				key->scan.click_cnt++;
 		}
-		else if(key->scan.tick == key->scan.long_limit)
+		else if(key->scan.tick == __KEY_LONG_LIMIT)
 		{
 			__key_event_mark(key, KEY_LONG_PRESS_EVENT);
 			key->scan.click_cnt = 0;
 		}
-		else if(key->scan.tick == key->scan.long_long_limit)
+		else if(key->scan.tick == __KEY_LONG_LONG_LIMIT)
 		{
 			__key_event_mark(key, KEY_LONG_PRESS_EVENT);
 			key->scan.click_cnt = 0;
@@ -202,7 +206,7 @@ uint8_t ry_key_state_machine(ry_key_t *key)
 			key->scan.tick = 0;
 		}
 		/* 从按键按下开始计时，若时间超过连击时间阈值，则认为连击结束 */
-		else if(key->scan.tick > key->scan.double_click_limit)
+		else if(key->scan.tick > __KEY_DOUBLE_CLICK_LIMIT)
 		{
 			if(1 == key->scan.click_cnt)
 				__key_event_mark(key, KEY_SINGLE_CLICK_EVENT);
