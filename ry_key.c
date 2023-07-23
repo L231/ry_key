@@ -197,7 +197,7 @@ uint8_t ry_key_state_machine(ry_key_t *key)
 	case KEY_UP_STATUS :
 		if(key->scan.level == key->scan.valid_level)
 		{
-			__key_event_mark(key, KEY_DOWN_STATUS);
+			__key_event_mark(key, KEY_DOWN_EVENT);
 			key->status         = KEY_DOWN_STATUS;
 			key->scan.tick = 0;
 		}
@@ -238,13 +238,14 @@ void ry_key_scan(void)
 	}
 
 	/* 过多按键激活 */
-	if(__keyObj.event_cnt > KEY_COMPOUND_NUM || __keyObj.down_key_cnt >= KEY_COMPOUND_NUM)
+	if(__keyObj.event_cnt > KEY_COMPOUND_NUM || __keyObj.down_key_cnt > KEY_COMPOUND_NUM)
 		goto __KEY_EVENT_CLEAR;
 	/* 多个按键触发了不同的事件 */
 	if(__keyObj.event_cnt > 1 && __keyObj.event_cnt != __keyObj.event_down_cnt)
 		goto __KEY_EVENT_CLEAR;
 
 	/* 需要判断组合键，高优先级。有多个独立按键激活，同时按下事件数不为0，没有发生其它事件 */
+	/* 存在小概率事件，即组合键本应匹配成功，但因为其中某个关联按键的长按事件触发了，导致误判为事件冲突 */
 	if(__keyObj.down_key_cnt > 1 &&
 		__keyObj.event_down_cnt > 0 &&
 		__keyObj.event_cnt == __keyObj.event_down_cnt)
