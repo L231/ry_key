@@ -191,7 +191,7 @@ uint8_t ry_key_state_machine(ry_key_t *key)
 		}
 		else if(key->scan.tick == __KEY_LONG_LONG_LIMIT)
 		{
-			__key_event_mark(key, KEY_LONG_PRESS_EVENT);
+			__key_event_mark(key, KEY_LONG_LONG_PRESS_EVENT);
 			key->scan.click_cnt = 0;
 #if KEY_LONG_LONG_PRESS_STATUS_KEEP == 0
 			key->status         = KEY_IDLE_STATUS;
@@ -236,7 +236,7 @@ void ry_key_scan(void)
 	ry_slist_t *Node;
 
 	/* 扫描所有的独立物理按键 */
-	for(Node = &__keySlist; Node->next != RY_NULL; Node = Node->next)
+	for(Node = __keySlist.next; Node != RY_NULL; Node = Node->next)
 	{
 		ry_key_state_machine(TASK_CONTAINER_OF(Node, ry_key_t, slist));
 	}
@@ -254,7 +254,7 @@ void ry_key_scan(void)
 		__keyObj.event_down_cnt > 0 &&
 		__keyObj.event_cnt == __keyObj.event_down_cnt)
 	{
-		for(Node = &__keyCompoundSlist; Node->next != RY_NULL; Node = Node->next)
+		for(Node = __keyCompoundSlist.next; Node != RY_NULL; Node = Node->next)
 		{
 			KeyCompound = TASK_CONTAINER_OF(Node, ry_key_compound_t, slist);
 			/* 组合键的按键个数与激活的按键个数匹配 */

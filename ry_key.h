@@ -25,9 +25,9 @@
 
 #if KEY_LIMIT_DEFAULT_ENABLE == 1
 #define __KEY_LEVEL_FILTER_LIMIT                  5
-#define __KEY_DOUBLE_CLICK_LIMIT                  50
-#define __KEY_LONG_LIMIT                          300
-#define __KEY_LONG_LONG_LIMIT                     800
+#define __KEY_DOUBLE_CLICK_LIMIT                  150
+#define __KEY_LONG_LIMIT                          2000
+#define __KEY_LONG_LONG_LIMIT                     5000
 #else
 #define __KEY_LEVEL_FILTER_LIMIT                  key->scan.filter_limit
 #define __KEY_DOUBLE_CLICK_LIMIT                  key->scan.double_click_limit
