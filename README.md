@@ -4,8 +4,8 @@
 * **两种类型**  
   * 独立按键  
   * 组合键  
-* **3种状态**  
-  `按下`、`弹起`、`空闲`  
+* **2种状态**  
+  `按下`、`弹起`  
 * **9类事件**  
   `组合键`、`按压`、`弹起`、`单击`、`双击`、`三击`、`长按`、`超长按`、`无事件`  
 
@@ -61,15 +61,15 @@ void compound_key1_callback(ry_key_t *key)
 
 void user_key_init(void)
 {
-	ry_key_reg(&__keyPower, 1, 5, 50, 300, 900, key_power_get_level);
-	ry_key_reg(&__keyCtr,   1, 5, 50, 300, 900, key_ctr_get_level);
+	ry_key_reg(&__keyPower, 0, 0, key_power_get_level);
+	ry_key_reg(&__keyCtr,   0, 1, key_ctr_get_level);
 	ry_key_compound_reg(&__compoundKey1, compound_key1_callback);
 	
-	RY_KEY_CALLBACK_CFG(__keyPower, KEY_LONG_PRESS_EVENT, key_power_long_press_callback);
-	RY_KEY_CALLBACK_CFG(__keyCtr, KEY_SINGLE_CLICK_EVENT, key_ctr_single_click_callback);
+	RY_KEY_SET_EVENT_HANDLER(__keyPower, KEY_LONG_PRESS_EVENT, key_power_long_press_callback);
+	RY_KEY_SET_EVENT_HANDLER(__keyCtr, KEY_SINGLE_CLICK_EVENT, key_ctr_single_click_callback);
 	
-	ry_key_compound_insert_key_sn(&__compoundKey1, __keyPower.sn);
-	ry_key_compound_insert_key_sn(&__compoundKey1, __keyCtr.sn);
+	ry_key_compound_insert_key_sn(&__compoundKey1, &__keyPower);
+	ry_key_compound_insert_key_sn(&__compoundKey1, &__keyCtr);
 }
 
 int main(void)
